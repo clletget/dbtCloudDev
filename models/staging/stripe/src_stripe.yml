@@ -1,16 +1,39 @@
 version: 2
 sources:
   - name: stripe
+    description: It's a source with one table
     database: raw
     tables:
       - name: payment
+        description: table that registers all the payments from all the orders.
         loaded_at_field: _BATCHED_AT
-        freshness: 
+        freshness:
           warn_after:
             count: 24
             period: hour
           error_after:
             count: 160
             period: hour
-            
-      
+        columns:
+          - name: id
+            description: is the unique payment identification
+            tests:
+              - unique
+              - not_null
+          - name: orderid
+            description: the identification of the orders
+            tests:
+              - not_null
+              - relationships:
+                  to: ref('stg_orders')
+                  field: order_id
+          - name: paymentmethod
+            description: '{{doc("payment_method_desc")}}'
+            tests:
+              - not_null
+              - accepted_values:
+                  values:
+                    - credit_card
+                    - coupon
+                    - bank_transfer
+                    - gift_card
